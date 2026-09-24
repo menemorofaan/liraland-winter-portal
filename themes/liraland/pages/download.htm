@@ -1,0 +1,88 @@
+title = "Завантаження дистрибутива"
+url = "/download/:id"
+layout = "default"
+
+[session]
+==
+<?php
+use Winter\User\Facades\Auth;
+use Liraland\Software\Models\Distributive;
+use Liraland\Software\Models\License;
+
+function onStart()
+{
+    $id = $this->param('id');
+    $user = Auth::getUser();
+
+    // 1. Поиск дистрибутива
+    $distributive = Distributive::find($id);
+    if (!$distributive) {
+        \Flash::error('Дистрибутив не знайдено');
+        return \Redirect::to('/downloads');
+    }
+
+    // 2. Проверка прав доступа Liraland
+    if ($distributive->access_level === 'registered' && !$user) {
+        \Flash::error('Будь ласка, увійдіть для завантаження цього оновлення.');
+        return \Redirect::to('/login');
+    }
+
+    if ($distributive->access_level === 'licensed') {
+        if (!$user) {
+            \Flash::error('Для доступу до комерційного релізу необхідна активна ліцензія.');
+            return \Redirect::to('/login');
+        }
+
+        $hasLicense = License::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->exists();
+
+        if (!$hasLicense) {
+            \Flash::error('У вашому кабінеті немає активної ліцензії або закінчився термін підписки.');
+            return \Redirect::to('/cabinet');
+        }
+    }
+
+    // 3. Выбор источника файла: сначала проверяем серверное хранилище (file_path)
+    if (!empty($distributive->file_path)) {
+        $realPath = storage_path('app/protected_distributives/' . $distributive->file_path);
+        $fileName = $distributive->file_path;
+    } elseif ($distributive->file && file_exists($distributive->file->getLocalPath())) {
+        $realPath = $distributive->file->getLocalPath();
+        $fileName = $distributive->file->file_name;
+    } else {
+        $realPath = storage_path('app/protected_distributives/LIRA_SAPR_2026_Install.iso');
+        $fileName = 'LIRA_SAPR_2026_Install.iso';
+    }
+
+    if (!file_exists($realPath)) {
+        \Flash::error('Файл дистрибутива відсутній на сервері.');
+        return \Redirect::to('/downloads');
+    }
+
+    // 4. Отдача через Nginx X-Accel-Redirect
+    $useXAccel = env('NGINX_X_ACCEL', false);
+    $xAccelPrefix = env('NGINX_X_ACCEL_PREFIX', '/protected_distributives/');
+
+    if ($useXAccel) {
+        $nginxUri = rtrim($xAccelPrefix, '/') . '/' . basename($realPath);
+
+        return \Response::make('', 200, [
+            'X-Accel-Redirect'          => $nginxUri,
+            'Content-Type'              => 'application/octet-stream',
+            'Content-Disposition'       => 'attachment; filename="' . $fileName . '"',
+            'Content-Transfer-Encoding' => 'binary',
+            'X-Accel-Buffering'         => 'no',
+        ]);
+    }
+
+    // Локальный режим без Nginx (fallback)
+    return \Response::download($realPath, $fileName);
+}
+?>
+==
+<div class="max-w-xl mx-auto py-12 text-center">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0080c6] mx-auto mb-4"></div>
+    <h2 class="text-base font-bold text-gray-800">Підготовка завантаження...</h2>
+    <p class="text-xs text-gray-500 mt-1">Перевіряємо ліцензію та формуємо посилання.</p>
+</div>

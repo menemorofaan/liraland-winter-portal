@@ -1,0 +1,35 @@
+columns:
+    license_key:
+        label: 'Ключ ліцензії'
+        searchable: true
+        sortable: true
+
+    software_name:
+        label: 'Продукт'
+        searchable: true
+        sortable: true
+
+    user:
+        label: 'Акаунт клієнта'
+        relation: user
+        select: email
+        searchable: true
+
+    type:
+        label: 'Тип'
+        type: text
+
+    dongle_id:
+        label: 'USB-донгл'
+        searchable: true
+
+    expires_at:
+        label: 'Діє до'
+        type: date
+        format: 'd.m.Y'
+        sortable: true
+
+    status:
+        label: 'Статус'
+        type: text
+        sortable: true

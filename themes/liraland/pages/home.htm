@@ -1,0 +1,369 @@
+title = "Головна"
+url = "/"
+layout = "default"
+is_hidden = 0
+
+[session]
+==
+<?php
+use Winter\User\Facades\Auth;
+
+function onStart()
+{
+    $this['user'] = Auth::getUser();
+}
+?>
+==
+<div class="w-full bg-white text-gray-800">
+
+    <!-- 1. HERO БЛОК: Заголовок + Аксонометрическая схема САПР -->
+    <section class="max-w-7xl mx-auto px-4 pt-10 pb-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div class="lg:col-span-6 space-y-4 text-left">
+            <h1 class="text-3xl sm:text-4xl font-bold text-[#1f2937] leading-tight">
+                Розрахунок та проектування конструкцій
+            </h1>
+            <p class="text-sm text-gray-600 leading-relaxed max-w-xl">
+                Повний цикл архітектурно-будівельного проектування з наданням проектно-конструкторської документації. Реалізація сучасних концепцій автоматизованого проектування та <a href="#" class="text-[#0080c6] hover:underline font-medium">технології BIM</a>.
+            </p>
+            <div class="pt-2 flex flex-wrap gap-3">
+                <a href="/downloads" class="bg-[#0080c6] hover:bg-[#006ca8] text-white px-5 py-2.5 rounded text-xs font-bold transition shadow-xs">
+                    Центр завантажень
+                </a>
+                <a href="/forum" class="border border-[#0080c6] text-[#0080c6] hover:bg-blue-50 px-5 py-2.5 rounded text-xs font-bold transition">
+                    Спільнота інженерів
+                </a>
+            </div>
+        </div>
+        <div class="lg:col-span-6 flex justify-center">
+            <!-- Иллюстрация многослойной расчетной схемы САПР -->
+            <div class="relative w-full max-w-lg">
+                <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80" alt="САПР схема" class="rounded shadow-xl border border-gray-200 object-cover h-64 sm:h-80 w-full transform -rotate-1 hover:rotate-0 transition duration-500">
+                <div class="absolute -bottom-3 -right-3 bg-[#1e4a75] text-white p-3 rounded shadow-lg text-xs font-semibold">
+                    ПК ЛІРА-САПР 2026 R1
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. СЕТКА: Видео + LIRA-FEM/CAD слева, Новости справа -->
+    <section class="max-w-7xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Левая колонка: Видео + Баннеры -->
+            <div class="lg:col-span-7 space-y-4 text-left">
+                <!-- Видео-баннер YouTube -->
+                <div class="relative rounded overflow-hidden shadow-sm border border-gray-200 bg-[#0f2b48] text-white group cursor-pointer aspect-video flex items-center justify-center">
+                    <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1000&q=80" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-50 transition" alt="Lira BIM">
+                    <div class="absolute top-3 left-4 flex items-center space-x-2">
+                        <span class="bg-[#0080c6] text-white text-[10px] font-bold px-2 py-0.5 rounded">BIM-технологія</span>
+                        <span class="text-xs font-semibold text-gray-200">ПК ЛІРА-САПР та САПФІР-3D</span>
+                    </div>
+                    <div class="relative z-10 text-center">
+                        <div class="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center mx-auto shadow-lg group-hover:scale-110 transition">
+                            <svg class="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                        <span class="text-xs text-gray-200 mt-2 block font-medium">Дивитися презентацію</span>
+                    </div>
+                </div>
+
+                <!-- Карточка LIRA-fem -->
+                <div class="bg-gradient-to-r from-[#177e89] to-[#0080c6] text-white p-5 rounded flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-xs gap-4">
+                    <div>
+                        <div class="text-2xl font-black tracking-wider">LIRA<span class="font-light text-cyan-200">-fem</span></div>
+                        <p class="text-xs text-cyan-50 mt-1">Проектування та розрахунок будівельних конструкцій різного призначення</p>
+                    </div>
+                    <div class="flex space-x-2 shrink-0">
+                        <button class="border border-white/80 hover:bg-white hover:text-cyan-900 text-white text-[11px] font-bold px-3 py-1.5 rounded transition">Можливості</button>
+                        <button class="border border-white/80 hover:bg-white hover:text-cyan-900 text-white text-[11px] font-bold px-3 py-1.5 rounded transition">Конфігурації та ціни</button>
+                    </div>
+                </div>
+
+                <!-- Карточка LIRA-cad -->
+                <div class="bg-gradient-to-r from-[#0080c6] to-[#00558f] text-white p-5 rounded flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-xs gap-4">
+                    <div>
+                        <div class="text-2xl font-black tracking-wider">LIRA<span class="font-light text-blue-200">-cad</span></div>
+                        <p class="text-xs text-blue-50 mt-1">Система параметричного 3D моделювання та архітектурних форм</p>
+                    </div>
+                    <div class="flex space-x-2 shrink-0">
+                        <button class="border border-white/80 hover:bg-white hover:text-blue-900 text-white text-[11px] font-bold px-3 py-1.5 rounded transition">Можливості</button>
+                        <button class="border border-white/80 hover:bg-white hover:text-blue-900 text-white text-[11px] font-bold px-3 py-1.5 rounded transition">Конфігурації та ціни</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая колонка: Новости компании -->
+            <div class="lg:col-span-5 text-left flex flex-col">
+                <div class="bg-[#1f4b75] text-white px-4 py-2.5 rounded-t text-sm font-bold flex justify-between items-center">
+                    <span>Новини</span>
+                    <button class="text-white hover:text-blue-200 text-xs">↓</button>
+                </div>
+                <div class="border border-t-0 border-[#cbd5e1] rounded-b p-4 space-y-4 bg-white flex-grow text-xs">
+                    <!-- Новость 1 -->
+                    <article class="border-b border-gray-100 pb-3">
+                        <span class="text-gray-400 text-[11px] block">25 серп. 2026</span>
+                        <a href="#" class="font-bold text-[#0080c6] hover:underline text-xs mt-0.5 block">
+                            STEEL FREEDOM 2026 разом з LIRALAND
+                        </a>
+                        <p class="text-gray-600 mt-1 leading-relaxed">
+                            Ми вже восьмий рік поспіль підтримуємо студентський архітектурний конкурс STEEL FREEDOM. За цей час партнерство стало для нас доброю традицією та важливою частиною роботи з майбутніми інженерами...
+                        </p>
+                    </article>
+
+                    <!-- Новость 2 -->
+                    <article class="border-b border-gray-100 pb-3">
+                        <span class="text-gray-400 text-[11px] block">22 серп. 2026</span>
+                        <a href="#" class="font-bold text-[#0080c6] hover:underline text-xs mt-0.5 block">
+                            Осінній сезон навчання 2026. Онлайн-курси LIRA-FEM та LIRA-CAD
+                        </a>
+                        <p class="text-gray-600 mt-1 leading-relaxed">
+                            Запрошуємо слухачів на дистанційне навчання роботі з програмним комплексом LIRA-FEM (ЛІРА-САПР). Розклад на осінь 2026.
+                        </p>
+                    </article>
+
+                    <!-- Новость 3 -->
+                    <article class="pb-1">
+                        <span class="text-gray-400 text-[11px] block">4 серп. 2026</span>
+                        <a href="#" class="font-bold text-[#0080c6] hover:underline text-xs mt-0.5 block">
+                            Пакет оновлення 1 для LIRA-FEM 2026 R1
+                        </a>
+                        <p class="text-gray-600 mt-1 leading-relaxed">
+                            Оновлення спрямоване на підвищення стабільності роботи, точності моделювання та якості BIM-взаємодії. Значно вдосконалено імпорт і експорт IFC.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. СИНИЙ БАННЕР: Для студентов и самообучения -->
+    <section class="bg-[#0080c6] text-white py-10 my-8 shadow-inner text-center">
+        <div class="max-w-5xl mx-auto px-4 space-y-3">
+            <span class="text-[11px] font-semibold tracking-widest uppercase text-blue-100 block">
+                СУЧАСНЕ ПРОГРАМНЕ ЗАБЕЗПЕЧЕННЯ ДЛЯ РОЗРАХУНКУ КОНСТРУКЦІЙ
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-bold">
+                Для студентів та самостійного навчання
+            </h2>
+            <p class="text-xs sm:text-sm text-blue-50 max-w-2xl mx-auto leading-relaxed">
+                Широкі можливості як для самостійного навчання моделюванню будівельних конструкцій, так і для навчального процесу в профільних навчальних закладах.
+            </p>
+            <div class="pt-2">
+                <a href="/downloads" class="inline-block border border-white hover:bg-white hover:text-[#0080c6] text-white px-6 py-2 rounded text-xs font-bold transition">
+                    Детальніше
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. ВИТРИНА КНИГ И ПОСОБИЙ ПО САПР СО СКИДКАМИ -->
+    <section class="max-w-7xl mx-auto px-4 py-8 text-center">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <!-- Книга 1 -->
+            <div class="flex flex-col items-center group text-center">
+                <div class="relative mb-3">
+                    <span class="absolute top-2 -left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">Новинка</span>
+                    <div class="w-36 h-48 bg-gradient-to-tr from-slate-200 to-sky-100 rounded border border-gray-300 shadow-md flex items-center justify-center p-3 group-hover:scale-105 transition">
+                        <span class="text-[11px] font-bold text-gray-700 leading-tight">Основи комп'ютерного моделювання</span>
+                    </div>
+                </div>
+                <h4 class="text-xs font-semibold text-gray-800 hover:text-[#0080c6] cursor-pointer">Основи комп'ютерного моделювання</h4>
+                <div class="text-xs font-bold text-gray-900 mt-1">250 грн.</div>
+            </div>
+
+            <!-- Книга 2 -->
+            <div class="flex flex-col items-center group text-center">
+                <div class="relative mb-3">
+                    <span class="absolute bottom-1 -right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">-33%</span>
+                    <div class="w-36 h-48 bg-gradient-to-tr from-blue-900 to-slate-800 text-white rounded border border-gray-300 shadow-md flex items-center justify-center p-3 group-hover:scale-105 transition">
+                        <span class="text-[11px] font-bold text-cyan-200 leading-tight">Компьютерные модели конструкций</span>
+                    </div>
+                </div>
+                <h4 class="text-xs font-semibold text-gray-800 hover:text-[#0080c6] cursor-pointer">Компьютерные модели конструкций (Изд...)</h4>
+                <div class="text-xs font-bold text-gray-900 mt-1">100 грн.</div>
+            </div>
+
+            <!-- Книга 3 -->
+            <div class="flex flex-col items-center group text-center">
+                <div class="relative mb-3">
+                    <span class="absolute bottom-1 -right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">-25%</span>
+                    <div class="w-36 h-48 bg-gradient-to-tr from-cyan-700 to-teal-900 text-white rounded border border-gray-300 shadow-md flex items-center justify-center p-3 group-hover:scale-105 transition">
+                        <span class="text-[11px] font-bold text-white leading-tight">Компьютерное моделирование процессов</span>
+                    </div>
+                </div>
+                <h4 class="text-xs font-semibold text-gray-800 hover:text-[#0080c6] cursor-pointer">Компьютерное моделирование процессо...</h4>
+                <div class="text-xs font-bold text-gray-900 mt-1">150 грн.</div>
+            </div>
+
+            <!-- Книга 4 -->
+            <div class="flex flex-col items-center group text-center">
+                <div class="relative mb-3">
+                    <div class="w-36 h-48 bg-gradient-to-tr from-slate-900 to-blue-950 text-white rounded border border-gray-300 shadow-md flex items-center justify-center p-3 group-hover:scale-105 transition">
+                        <span class="text-[11px] font-bold text-amber-200 leading-tight">Информационные технологии интеграции</span>
+                    </div>
+                </div>
+                <h4 class="text-xs font-semibold text-gray-800 hover:text-[#0080c6] cursor-pointer">Информационные технологии интеграции...</h4>
+                <div class="text-xs font-bold text-gray-900 mt-1">180 грн.</div>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <button class="border border-gray-400 hover:border-gray-600 text-gray-700 px-6 py-2 rounded text-xs font-semibold transition">
+                Всі книжки
+            </button>
+        </div>
+    </section>
+
+    <!-- 5. БАЗА ЗНАНИЙ (С CodeMeter и Лицензиями) -->
+    <section class="max-w-7xl mx-auto px-4 py-8 border-t border-gray-100 text-center">
+        <span class="text-[10px] uppercase font-bold text-gray-400 tracking-widest block">СТАТТІ, ВІДЕО, ДОКУМЕНТАЦІЯ</span>
+        <h2 class="text-2xl font-bold text-[#1f2937] mt-1 mb-8">Нове у базі знань</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+            <!-- Статья 1: CodeMeter -->
+            <div class="border border-gray-200 rounded-sm overflow-hidden shadow-2xs hover:shadow-md transition bg-white flex flex-col">
+                <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80" alt="CodeMeter" class="h-40 w-full object-cover">
+                <div class="p-4 flex flex-col flex-grow">
+                    <h3 class="font-bold text-sm text-gray-900 hover:text-[#0080c6] cursor-pointer">
+                        Активація програмних та USB-ключів CodeMeter
+                    </h3>
+                    <p class="text-xs text-gray-600 mt-2 leading-relaxed flex-grow">
+                        За допомогою CodeMeter Control Center можна активувати програмні ліцензії, оновлювати USB-ключі CodeMeter, створювати файли запиту ліцензії та переглядати склад ак...
+                    </p>
+                    <div class="flex items-center space-x-3 text-[11px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                        <span>📅 19.05.2026</span>
+                        <span>👁 182</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Статья 2: Тип лицензии -->
+            <div class="border border-gray-200 rounded-sm overflow-hidden shadow-2xs hover:shadow-md transition bg-white flex flex-col">
+                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80" alt="Licenses" class="h-40 w-full object-cover">
+                <div class="p-4 flex flex-col flex-grow">
+                    <h3 class="font-bold text-sm text-gray-900 hover:text-[#0080c6] cursor-pointer">
+                        Який у мене тип ліцензії?
+                    </h3>
+                    <p class="text-xs text-gray-600 mt-2 leading-relaxed flex-grow">
+                        LIRA-FEM підтримує декілька моделей ліцензування: хмарні підписки та безстрокові апаратні ключі, що дозволяють обрати оптимальний варіант для компанії або вузу.
+                    </p>
+                    <div class="flex items-center space-x-3 text-[11px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                        <span>📅 15.05.2026</span>
+                        <span>👁 171</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Статья 3: Жорстка балка -->
+            <div class="border border-gray-200 rounded-sm overflow-hidden shadow-2xs hover:shadow-md transition bg-white flex flex-col">
+                <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=600&q=80" alt="Beam test" class="h-40 w-full object-cover">
+                <div class="p-4 flex flex-col flex-grow">
+                    <h3 class="font-bold text-sm text-gray-900 hover:text-[#0080c6] cursor-pointer">
+                        Тест 4.1. Жорстка балка на підвісках
+                    </h3>
+                    <p class="text-xs text-gray-600 mt-2 leading-relaxed flex-grow">
+                        Визначення напружено-деформованого стану системи, який представляє собою абсолютно жорстку і міцну балку на трьох нелінійно пружних підвісках.
+                    </p>
+                    <div class="flex items-center space-x-3 text-[11px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                        <span>📅 13.03.2026</span>
+                        <span>👁 247</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. ФИРМЕННЫЙ СИЛУЭТ ГОРОДА (РАЗДЕЛИТЕЛЬ) -->
+    <div class="w-full overflow-hidden text-gray-200 py-4 flex justify-center">
+        <svg class="w-full max-w-7xl h-12 text-gray-300 fill-current" viewBox="0 0 1200 60" preserveAspectRatio="none">
+            <path d="M0,60 L0,45 L15,45 L15,35 L25,35 L25,50 L40,50 L40,30 L55,30 L55,60 L70,60 L70,20 L85,20 L85,60 L120,60 L120,40 L135,40 L135,15 L150,15 L150,60 L180,60 L180,35 L195,35 L195,60 L240,60 L240,10 L255,10 L255,45 L270,45 L270,60 L320,60 L320,25 L340,25 L340,60 L400,60 L400,30 L415,30 L415,15 L430,15 L430,60 L500,60 L500,40 L520,40 L520,60 L600,60 L600,20 L620,20 L620,60 L700,60 L700,35 L720,35 L720,15 L735,15 L735,60 L800,60 L800,45 L820,45 L820,60 L900,60 L900,10 L920,10 L920,60 L1000,60 L1000,30 L1020,30 L1020,60 L1100,60 L1100,25 L1120,25 L1120,60 L1200,60 Z"/>
+        </svg>
+    </div>
+
+    <!-- 7. РЕАЛЬНЫЕ ПРОЕКТЫ КЛИЕНТОВ (АЭС, Высотки, Еврокоды) -->
+    <section class="max-w-7xl mx-auto px-4 py-8 text-center">
+        <span class="text-[10px] uppercase font-bold text-gray-400 tracking-widest block">РОЗРАХУНОК КОНСТРУКЦІЙ ДЛЯ ПРОФЕСІОНАЛІВ</span>
+        <h2 class="text-2xl font-bold text-[#1f2937] mt-1">
+            Розраховані та запроектовані у ПК ЛІРА-САПР проекти наших користувачів
+        </h2>
+        <p class="text-xs text-gray-600 max-w-4xl mx-auto mt-2 leading-relaxed">
+            За минулі часи наші програми застосовувалися при розрахунку і проектуванні унікальних будівельних об'єктів різного призначення: контейнмент АЕС, плотина ГЕС, резервуари великих діаметрів, шельфові платформи, фундамент під висотні башти вітрогенераторів, багатьох армокам'яних та залізобетонних конструкцій висотних будівель.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left mt-8">
+            <!-- Проект 1 -->
+            <div class="border border-gray-200 rounded-sm overflow-hidden bg-white shadow-2xs flex flex-col">
+                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="h-44 w-full object-cover" alt="Еврокоды">
+                <div class="p-4 flex flex-col flex-grow">
+                    <h3 class="font-bold text-sm text-gray-900">
+                        Єврокоди на практиці: розрахунок багатоквартирного будинку в LIRA-FEM
+                    </h3>
+                    <p class="text-xs text-gray-600 mt-2 leading-relaxed flex-grow">
+                        Демонстрація повного циклу розрахунків за вимогами Єврокодів для багатоквартирного будинку у Вільнюсі: BIM/IFC, навантаження, РСН, результати армування.
+                    </p>
+                    <span class="text-[11px] text-gray-400 font-semibold mt-4 pt-2 border-t border-gray-100 block">NJ Optimal, Литва</span>
+                </div>
+            </div>
+
+            <!-- Проект 2: АЭС -->
+            <div class="border border-gray-200 rounded-sm overflow-hidden bg-white shadow-2xs flex flex-col">
+                <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80" class="h-44 w-full object-cover" alt="АЭС">
+                <div class="p-4 flex flex-col flex-grow">
+                    <h3 class="font-bold text-sm text-gray-900">
+                        Розрахунок будівельних конструкцій атомних станцій
+                    </h3>
+                    <p class="text-xs text-gray-600 mt-2 leading-relaxed flex-grow">
+                        Роботи виконуються в рамках підвищення безпеки для продовження терміну експлуатації атомних станцій.
+                    </p>
+                    <span class="text-[11px] text-gray-400 font-semibold mt-4 pt-2 border-t border-gray-100 block">ДП «НАЕК «Енергоатом»</span>
+                </div>
+            </div>
+
+            <!-- Проект 3: Высотка -->
+            <div class="border border-gray-200 rounded-sm overflow-hidden bg-white shadow-2xs flex flex-col">
+                <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80" class="h-44 w-full object-cover" alt="Высотка">
+                <div class="p-4 flex flex-col flex-grow">
+                    <h3 class="font-bold text-sm text-gray-900">
+                        Використання BIM-технології в процесі проектування висотної будівлі
+                    </h3>
+                    <p class="text-xs text-gray-600 mt-2 leading-relaxed flex-grow">
+                        Підготовка розрахункової моделі виконана в САПФІР-3D, в який була імпортована BIM-модель з Revit за допомогою формату IFC.
+                    </p>
+                    <span class="text-[11px] text-gray-400 font-semibold mt-4 pt-2 border-t border-gray-100 block">Архітектурне бюро «Алюр», Україна</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <button class="border border-[#0080c6] text-[#0080c6] hover:bg-blue-50 px-6 py-2 rounded text-xs font-semibold transition">
+                Галерея проектів
+            </button>
+        </div>
+    </section>
+
+    <!-- 8. БЛОК ПОДДЕРЖКИ: Виникли запитання? У нас є відповіді! -->
+    <section class="max-w-7xl mx-auto px-4 py-12 border-t border-gray-200">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            <div class="md:col-span-8 text-left space-y-3">
+                <span class="text-[10px] uppercase font-bold text-gray-400 tracking-widest block">
+                    ПОСТІЙНИЙ РОЗВИТОК ТА ВСЕБІЧНА ТЕХНІЧНА ПІДТРИМКА
+                </span>
+                <h2 class="text-2xl font-bold text-[#1f2937]">
+                    Виникли запитання? У нас є відповіді!
+                </h2>
+                <p class="text-xs text-gray-600 leading-relaxed max-w-2xl">
+                    Ми вважаємо, що добре налагоджений процес технічної підтримки – ключ до інтенсивного ритму вашої роботи. Тому Ви завжди можете розраховувати на кваліфіковану допомогу. 
+                    <a href="/cabinet" class="text-[#0080c6] hover:underline font-semibold">Підтримка та навчання</a>.
+                </p>
+                <p class="text-xs text-gray-600 leading-relaxed max-w-2xl">
+                    В процесі розвитку розрахункова програма LIRA-FEM (її попередниці - ЛІРА-САПР, ЕКСПРЕС, МІРАЖ, СУПЕР, ЛІРА-ЕС, ЛІРА-СМ, Ліра 9.4, Ліра 9.6) ввібрала в себе всі самі передові ідеї в області сучасного високотехнологічного будівництва. Разом з тим програма зберігає спадкоємність при підготовці вихідних даних і аналізі результатів. 
+                    <a href="#" class="text-[#0080c6] hover:underline font-semibold">Історія створення ПК Ліра</a>.
+                </p>
+            </div>
+            <div class="md:col-span-4 flex justify-center">
+                <div class="w-48 h-48 rounded-full overflow-hidden border-4 border-white shadow-xl">
+                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80" alt="Команда підтримки" class="w-full h-full object-cover">
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>

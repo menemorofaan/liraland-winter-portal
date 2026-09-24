@@ -1,0 +1,26 @@
+scopes:
+    status:
+        label: 'Статус'
+        type: dropdown
+        conditions: status = :filtered
+        options:
+            active: 'Активна'
+            expired: 'Закінчився термін'
+            suspended: 'Заблокована'
+
+    type:
+        label: 'Тип ліцензії'
+        type: dropdown
+        conditions: type = :filtered
+        options:
+            subscription: 'Хмарна підписка'
+            dongle: 'USB-донгл CodeMeter'
+
+    software_name:
+        label: 'Програмний продукт'
+        type: dropdown
+        conditions: software_name = :filtered
+        options:
+            'ЛИРА-САПР 2024': 'ЛИРА-САПР 2024'
+            'САПФИР 2024': 'САПФИР 2024'
+            'МОНОМАХ-САПР': 'МОНОМАХ-САПР'

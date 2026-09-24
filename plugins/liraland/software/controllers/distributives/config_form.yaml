@@ -1,0 +1,31 @@
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+# Record name
+name: 'liraland.software::lang.models.distributive.label'
+
+# Model Form Field configuration
+form: $/liraland/software/models/distributive/fields.yaml
+
+# Model Class name
+modelClass: Liraland\Software\Models\Distributive
+
+# Default redirect location
+defaultRedirect: liraland/software/distributives
+
+# Create page
+create:
+    title: backend::lang.form.create_title
+    redirect: liraland/software/distributives/update/:id
+    redirectClose: liraland/software/distributives
+
+# Update page
+update:
+    title: backend::lang.form.update_title
+    redirect: liraland/software/distributives
+    redirectClose: liraland/software/distributives
+
+# Preview page
+preview:
+    title: backend::lang.form.preview_title

@@ -1,0 +1,78 @@
+fields:
+    user:
+        label: "Прив'язати до зареєстрованого користувача сайту"
+        type: relation
+        nameFrom: email
+        emptyOption: '-- Оберіть користувача з бази (наприклад, Кузьма) --'
+        span: full
+
+    software_name:
+        label: 'Програмний продукт'
+        type: dropdown
+        options:
+            'ЛИРА-САПР 2024': 'ЛИРА-САПР 2024'
+            'LIRA-FEM 2026': 'LIRA-FEM 2026'
+            'САПФІР 2024': 'САПФІР 2024'
+            'МОНОМАХ-САПР': 'МОНОМАХ-САПР'
+        span: left
+
+    license_key:
+        label: 'Ліцензійний ключ (залиште пустим для автогенерації)'
+        placeholder: 'LIC-XXXX-XXXX'
+        type: text
+        span: right
+
+    type:
+        label: 'Тип ліцензії'
+        type: radio
+        default: subscription
+        options:
+            subscription: 'Хмарна підписка (термінова)'
+            dongle: 'Безстрокова (USB-донгл CodeMeter)'
+        span: full
+
+    dongle_id:
+        label: 'Серійний номер USB-донгла CodeMeter'
+        placeholder: 'CM-XXXXXXXX'
+        type: text
+        span: left
+        trigger:
+            action: show
+            field: type
+            condition: value[dongle]
+
+    expires_at:
+        label: 'Діє до (закінчення підписки)'
+        type: datepicker
+        mode: date
+        span: left
+        trigger:
+            action: show
+            field: type
+            condition: value[subscription]
+
+    status:
+        label: 'Статус ліцензії'
+        type: dropdown
+        default: active
+        options:
+            active: 'Активна'
+            expired: 'Закінчився термін'
+            suspended: 'Заблокована / Відкликана'
+        span: right
+
+    client_name:
+        label: "Ім'я клієнта / Організація (заповниться автоматично)"
+        type: text
+        span: left
+
+    client_email:
+        label: 'Email клієнта (заповниться автоматично)'
+        type: text
+        span: right
+
+    notes:
+        label: 'Службові примітки'
+        type: textarea
+        size: small
+        span: full

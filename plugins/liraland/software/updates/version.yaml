@@ -1,0 +1,18 @@
+1.0.1:
+    - 'Initialize Software Distributives table'
+    - v1.0.1/create_distributives_table.php
+1.0.2:
+    - 'Create Licenses table'
+    - v1.0.2/create_licenses_table.php
+1.0.3:
+    - 'Create Support Tickets table'
+    - v1.0.3/create_tickets_table.php
+1.0.4:
+    - 'Add access_level to distributives and user_id to licenses'
+    - v1.0.4/update_tables_for_access_and_users.php
+1.0.5:
+    - 'Add is_published to distributives table'
+    - v1.0.5/add_is_published_to_distributives.php
+1.0.6:
+    - 'Додавання поля file_path для серверних файлів'
+    - add_file_path_to_distributives_table.php

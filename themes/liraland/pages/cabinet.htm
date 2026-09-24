@@ -1,0 +1,249 @@
+title = "Особистий кабінет"
+url = "/cabinet"
+layout = "default"
+
+[account]
+==
+use Liraland\Software\Models\License;
+use Liraland\Software\Models\Ticket;
+use Winter\User\Facades\Auth;
+
+function onStart()
+{
+    $user = Auth::getUser();
+    if (!$user) {
+        return \Redirect::to('/login');
+    }
+
+    $this['user'] = $user;
+
+    // Подтягиваем лицензии: и по выбранному аккаунту user_id, и по совпадению email!
+    $this['licenses'] = License::where(function($q) use ($user) {
+            $q->where('user_id', $user->id)->orWhere('client_email', $user->email);
+        })
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    // Подтягиваем тикеты поддержки этого пользователя
+    $this['tickets'] = Ticket::where('client_email', $user->email)
+        ->orderBy('created_at', 'desc')
+        ->get();
+}
+
+function onCreateTicket()
+{
+    $user = Auth::getUser();
+    if (!$user) return;
+
+    $ticket = new Ticket();
+    $ticket->subject = post('subject');
+    $ticket->product = post('product');
+    $ticket->message = post('message');
+    $ticket->priority = post('priority', 'normal');
+    $ticket->client_name = $user->name . ' ' . ($user->surname ?? '');
+    $ticket->client_email = $user->email;
+    $ticket->status = 'new';
+    $ticket->save();
+
+    \Flash::success('Звернення зареєстровано під номером: ' . $ticket->ticket_number);
+    return \Redirect::to('/cabinet');
+}
+==
+<div class="w-full bg-[#f4f6f9] py-8 flex-grow">
+    <div class="max-w-[1140px] mx-auto px-4 space-y-6">
+
+        <!-- ВЕРХНЯЯ КАРТОЧКА: ПРОФИЛЬ КЛИЕНТА -->
+        <div class="bg-white rounded-[2px] border border-gray-200 p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="flex items-center gap-4">
+                <!-- Аватарка с инициалами -->
+                <div class="w-14 h-14 rounded-full bg-[#0080c6] text-white flex items-center justify-center text-xl font-bold uppercase shadow-sm">
+                    {{ user.name|slice(0, 1) }}{{ user.surname|slice(0, 1) }}
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">{{ user.name }} {{ user.surname }}</h1>
+                    <p class="text-xs text-gray-500 mt-0.5">
+                        Логін: <span class="font-medium text-gray-700">{{ user.username }}</span> | 
+                        Email: <span class="font-medium text-gray-700">{{ user.email }}</span>
+                    </p>
+                    <span class="inline-block mt-2 px-2.5 py-0.5 bg-green-50 text-green-700 border border-green-200 text-[10px] font-medium rounded-full">
+                        🟢 Активований користувач
+                    </span>
+                </div>
+            </div>
+
+            <!-- Быстрые действия -->
+            <div class="flex items-center gap-3">
+                <a href="/downloads" class="px-4 py-2 border border-[#0080c6] text-[#0080c6] hover:bg-[#0080c6] hover:text-white text-xs font-medium rounded-[2px] transition">
+                    <i class="fa-solid fa-download mr-1"></i> До дистрибутивів
+                </a>
+                <a href="/logout" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-[2px] transition">
+                    Вийти
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- ЛЕВАЯ КОЛОНКА (2/3): ЛИЦЕНЗИИ И ТИКЕТЫ -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- 1. БЛОК ЛИЦЕНЗИЙ -->
+                <div class="bg-white rounded-[2px] border border-gray-200 p-6 shadow-sm">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+                        <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
+                            <i class="fa-solid fa-key text-[#0080c6]"></i> Мої ліцензії та ключі захисту
+                        </h3>
+                        <span class="text-xs text-gray-400">Всього: {{ licenses.count }}</span>
+                    </div>
+
+                    {% if licenses.count %}
+                        <div class="space-y-3">
+                            {% for lic in licenses %}
+                                <div class="p-4 rounded-[2px] border {% if lic.status == 'active' %}border-blue-200 bg-blue-50/30{% else %}border-gray-200 bg-gray-50{% endif %} flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h4 class="text-sm font-bold text-gray-800">{{ lic.software_name }}</h4>
+                                            {% if lic.status == 'active' %}
+                                                <span class="px-2 py-0.5 bg-green-100 text-green-800 text-[10px] font-semibold rounded">Активна</span>
+                                            {% else %}
+                                                <span class="px-2 py-0.5 bg-red-100 text-red-800 text-[10px] font-semibold rounded">Призупинена</span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="text-xs font-mono text-[#0080c6] mt-1 font-semibold">{{ lic.license_key }}</p>
+                                        
+                                        <div class="text-[11px] text-gray-500 mt-1">
+                                            {% if lic.type == 'dongle' %}
+                                                <span class="text-purple-700 font-medium"><i class="fa-brands fa-usb mr-1"></i>USB-донгл CodeMeter: {{ lic.dongle_id }}</span>
+                                            {% else %}
+                                                <span class="text-blue-700 font-medium"><i class="fa-solid fa-cloud mr-1"></i>Хмарна підписка до {{ lic.expires_at|date('d.m.Y') }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="text-right">
+                                        <a href="/downloads" class="text-xs text-[#0080c6] hover:underline font-medium">
+                                            Завантажити софт &rarr;
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-6 text-gray-500 text-xs">
+                            <i class="fa-regular fa-folder-open text-2xl text-gray-300 block mb-2"></i>
+                            У вас поки немає зареєстрованих комерційних ліцензій.<br>
+                            Зверніться до відділу продажів для прив'язки договору.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 2. БЛОК ТИКЕТОВ ПОДДЕРЖКИ -->
+                <div class="bg-white rounded-[2px] border border-gray-200 p-6 shadow-sm">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+                        <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
+                            <i class="fa-solid fa-ticket text-[#0080c6]"></i> Мої звернення до техпідтримки
+                        </h3>
+                        <span class="text-xs text-gray-400">Всього: {{ tickets.count }}</span>
+                    </div>
+
+                    {% if tickets.count %}
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="border-b border-gray-200 text-gray-400 font-medium">
+                                        <th class="pb-2">Номер</th>
+                                        <th class="pb-2">Тема</th>
+                                        <th class="pb-2">Продукт</th>
+                                        <th class="pb-2">Статус</th>
+                                        <th class="pb-2">Дата</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    {% for tck in tickets %}
+                                        <tr>
+                                            <td class="py-2.5 font-mono text-[#0080c6] font-bold">{{ tck.ticket_number }}</td>
+                                            <td class="py-2.5 text-gray-800 font-medium">{{ tck.subject }}</td>
+                                            <td class="py-2.5 text-gray-600">{{ tck.product }}</td>
+                                            <td class="py-2.5">
+                                                {% if tck.status == 'new' %}
+                                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-[2px] text-[10px]">Новий</span>
+                                                {% elseif tck.status == 'in_progress' %}
+                                                    <span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-[2px] text-[10px]">В роботі</span>
+                                                {% elseif tck.status == 'waiting' %}
+                                                    <span class="px-2 py-0.5 bg-orange-100 text-orange-800 rounded-[2px] text-[10px]">Очікує клієнта</span>
+                                                {% elseif tck.status == 'resolved' %}
+                                                    <span class="px-2 py-0.5 bg-green-100 text-green-800 rounded-[2px] text-[10px]">Вирішено</span>
+                                                {% else %}
+                                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-[2px] text-[10px]">Закрито</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="py-2.5 text-gray-400">{{ tck.created_at|date('d.m.Y') }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-xs text-gray-500 text-center py-4">
+                            У вас немає відкритих звернень.
+                        </p>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- ПРАВАЯ КОЛОНКА (1/3): ФОРМА БЫСТРОГО ОБРАЩЕНИЯ В САППОРТ -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-[2px] border border-gray-200 p-6 shadow-sm">
+                    <h3 class="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <i class="fa-regular fa-comment-dots text-[#0080c6]"></i> Нове звернення
+                    </h3>
+                    <p class="text-xs text-gray-500 mb-4 leading-relaxed">
+                        Задайте питання інженерам технічної підтримки Liraland.
+                    </p>
+
+                    <form data-request="onCreateTicket" class="space-y-3 text-xs">
+                        <div>
+                            <label class="block text-gray-700 mb-1">Програмний продукт</label>
+                            <select name="product" required class="w-full px-2.5 py-1.5 border border-gray-300 rounded-[2px] bg-gray-50 focus:bg-white text-xs">
+                                <option>ЛИРА-САПР 2024</option>
+                                <option>САПФИР 2024</option>
+                                <option>МОНОМАХ-САПР</option>
+                                <option>Ліцензування / Ключі CodeMeter</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 mb-1">Тема звернення</label>
+                            <input type="text" name="subject" required placeholder="Коротко про проблему"
+                                class="w-full px-2.5 py-1.5 border border-gray-300 rounded-[2px] text-xs focus:outline-none focus:border-[#0080c6]">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 mb-1">Пріоритет</label>
+                            <select name="priority" class="w-full px-2.5 py-1.5 border border-gray-300 rounded-[2px] bg-gray-50 focus:bg-white text-xs">
+                                <option value="normal">🔵 Звичайний</option>
+                                <option value="low">🟢 Низький</option>
+                                <option value="high">🟠 Високий</option>
+                                <option value="critical">🔴 Критичний</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 mb-1">Опис ситуації</label>
+                            <textarea name="message" rows="3" required placeholder="Опишіть деталі помилки або питання..."
+                                class="w-full px-2.5 py-1.5 border border-gray-300 rounded-[2px] text-xs focus:outline-none focus:border-[#0080c6]"></textarea>
+                        </div>
+
+                        <button type="submit" 
+                            class="w-full py-2 bg-[#0080c6] hover:bg-[#0070ad] text-white text-xs font-medium rounded-[2px] transition shadow-sm">
+                            Надіслати звернення
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>

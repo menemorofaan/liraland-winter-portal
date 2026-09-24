@@ -1,0 +1,30 @@
+scopes:
+    status:
+        label: 'Статус'
+        type: dropdown
+        conditions: status = :filtered
+        options:
+            new: 'Новий'
+            in_progress: 'В роботі'
+            waiting: 'Очікує клієнта'
+            resolved: 'Вирішено'
+            closed: 'Закрито'
+
+    priority:
+        label: 'Пріоритет'
+        type: dropdown
+        conditions: priority = :filtered
+        options:
+            low: 'Низький'
+            normal: 'Звичайний'
+            high: 'Високий'
+            critical: 'Критичний'
+
+    product:
+        label: 'Продукт'
+        type: dropdown
+        conditions: product = :filtered
+        options:
+            'ЛИРА-САПР 2024': 'ЛИРА-САПР 2024'
+            'САПФИР 2024': 'САПФИР 2024'
+            'МОНОМАХ-САПР': 'МОНОМАХ-САПР'

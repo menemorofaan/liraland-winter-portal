@@ -1,0 +1,31 @@
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+# Record name
+name: 'liraland.software::lang.models.ticket.label'
+
+# Model Form Field configuration
+form: $/liraland/software/models/ticket/fields.yaml
+
+# Model Class name
+modelClass: Liraland\Software\Models\Ticket
+
+# Default redirect location
+defaultRedirect: liraland/software/tickets
+
+# Create page
+create:
+    title: backend::lang.form.create_title
+    redirect: liraland/software/tickets/update/:id
+    redirectClose: liraland/software/tickets
+
+# Update page
+update:
+    title: backend::lang.form.update_title
+    redirect: liraland/software/tickets
+    redirectClose: liraland/software/tickets
+
+# Preview page
+preview:
+    title: backend::lang.form.preview_title

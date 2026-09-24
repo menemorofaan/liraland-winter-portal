@@ -1,0 +1,256 @@
+title = "Завантаження та дистрибутиви"
+url = "/downloads"
+layout = "default"
+
+[account]
+==
+use Liraland\Software\Models\Distributive;
+use Liraland\Software\Models\License;
+use Winter\User\Facades\Auth;
+
+function onStart()
+{
+    $this['user'] = Auth::getUser();
+    $this['tab'] = input('tab', 'distributives');
+
+    $this['has_license'] = false;
+    if ($this['user']) {
+        $user = $this['user'];
+        $this['has_license'] = License::where(function($q) use ($user) {
+                $q->where('user_id', $user->id)->orWhere('client_email', $user->email);
+            })
+            ->where('status', 'active')
+            ->exists();
+    }
+
+    // Достаем только опубликованные дистрибутивы
+    $this['db_distributives'] = Distributive::where('is_published', true)
+        ->orderBy('created_at', 'desc')
+        ->get();
+}
+==
+<!-- HERO БАННЕР -->
+<section class="w-full bg-cover bg-center relative text-white" 
+         style="background-image: url('{{ 'assets/images/hero-search.jpg' | theme }}');">
+    <div class="bg-gradient-to-b from-black/45 via-black/25 to-black/40 pt-12 pb-8 px-4">
+        <div class="max-w-[1140px] mx-auto text-center">
+            <h1 class="text-2xl md:text-3xl font-light text-white mb-2 tracking-wide drop-shadow-sm">
+                Завантажуйте документацію, драйвери та дистрибутиви
+            </h1>
+            <p class="text-xs md:text-sm text-gray-100 max-w-2xl mx-auto leading-relaxed mb-6 font-light drop-shadow-sm">
+                програмне забезпечення для проектування та розрахунку будівельних та машинобудівних конструкцій різного призначення
+            </p>
+
+            <div class="flex flex-wrap items-center justify-center gap-3">
+                <a href="#" class="px-4 py-2 bg-[#0080c6] hover:bg-[#0070ad] text-white text-xs font-medium rounded-[2px] transition shadow">
+                    Некомерційна версія ЛІРА-САПР
+                </a>
+                <a href="#" class="px-4 py-2 bg-black/40 hover:bg-[#0080c6] border border-[#0080c6] text-white text-xs font-medium rounded-[2px] transition shadow">
+                    Демоверсія ЛІРА-САПР 2024
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ТЕМНАЯ ПОЛОСА ВЫБОРА ВЕРСИИ -->
+    <div class="w-full bg-black/65 backdrop-blur-[1px] py-4 px-4">
+        <div class="max-w-[1140px] mx-auto text-center">
+            <h4 class="text-white text-lg font-normal mb-3">Швидкий вибір версії</h4>
+            <div class="flex flex-wrap items-center justify-center gap-3">
+                <select class="bg-black/60 border border-[#28a745] text-white text-xs px-3 py-1.5 rounded-[1px] focus:outline-none w-52">
+                    <option>Всі версії ЛІРА-САПР</option>
+                    <option>LIRA-FEM 2026</option>
+                    <option>LIRA-FEM 2025</option>
+                    <option>ЛІРА-САПР 2024</option>
+                </select>
+                <select class="bg-black/60 border border-white/60 text-white text-xs px-3 py-1.5 rounded-[1px] focus:outline-none w-44">
+                    <option>МОНОМАХ-САПР</option>
+                </select>
+                <select class="bg-black/60 border border-white/60 text-white text-xs px-3 py-1.5 rounded-[1px] focus:outline-none w-44">
+                    <option>САПФІР-3D</option>
+                </select>
+                <select class="bg-black/60 border border-white/60 text-white text-xs px-3 py-1.5 rounded-[1px] focus:outline-none w-36">
+                    <option>ЕСПРІ</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ОСНОВНОЙ КОНТЕНТ -->
+<section class="w-full bg-white flex-grow py-8">
+    <div class="max-w-[1140px] mx-auto px-4">
+
+        <!-- Вкладки -->
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-gray-200 pb-4 mb-8">
+            <a href="#" class="text-xs text-[#0080c6] hover:underline flex items-center gap-1.5">
+                <i class="fa-regular fa-circle-question"></i>
+                Як дистанційно оновити ключ захисту?
+            </a>
+
+            <div class="flex items-center text-xs">
+                <a href="/downloads" class="bg-[#0080c6] text-white px-3 py-1 font-medium">Всі файли</a>
+                <a href="/downloads?tab=distributives" class="{% if tab == 'distributives' %}bg-[#28a745] text-white{% else %}bg-gray-100 hover:bg-gray-200 text-gray-700{% endif %} px-3 py-1 font-medium transition border-l border-white">
+                    Дистрибутиви
+                </a>
+                <a href="/downloads?tab=docs" class="{% if tab == 'docs' %}bg-[#28a745] text-white{% else %}bg-gray-100 hover:bg-gray-200 text-gray-700{% endif %} px-3 py-1 font-medium transition border-l border-white">
+                    Документація
+                </a>
+                <span class="bg-gray-100 text-gray-400 px-3 py-1 border-l border-white cursor-not-allowed">Презентації</span>
+                <span class="bg-gray-100 text-gray-400 px-3 py-1 border-l border-white cursor-not-allowed">Драйвери та утиліти</span>
+                <span class="bg-gray-100 text-gray-400 px-3 py-1 border-l border-white cursor-not-allowed">Сертифікати</span>
+            </div>
+        </div>
+
+        {% if tab == 'docs' %}
+            <!-- ДОКУМЕНТАЦИЯ -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                <div class="md:col-span-4 space-y-6">
+                    <div><h2 class="text-2xl font-light text-[#0080c6] border-b border-[#0080c6] pb-1 w-full block">LIRA-FEM 2026</h2><a href="#" class="text-xs text-[#0080c6] hover:underline mt-1 block">Список оновлень LIRA-FEM 2026</a></div>
+                    <div><h2 class="text-2xl font-light text-[#0080c6] border-b border-[#0080c6] pb-1 w-full block">LIRA-FEM 2025</h2><a href="#" class="text-xs text-[#0080c6] hover:underline mt-1 block">Список оновлень LIRA-FEM 2025</a></div>
+                    <div><h2 class="text-2xl font-light text-[#0080c6] border-b border-[#0080c6] pb-1 w-full block">ЛІРА-САПР 2024</h2><a href="#" class="text-xs text-[#0080c6] hover:underline mt-1 block">Список оновлень ЛІРА-САПР 2024</a></div>
+                </div>
+                <div class="md:col-span-8 space-y-6">
+                    <div class="flex items-start justify-between gap-4 border-b border-gray-100 pb-5">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 mt-0.5 shrink-0"><i class="fa-solid fa-book-open text-xs"></i></div>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-800">Програмний комплекс ЛІРА-САПР. Приклади розрахунку і проектування.</h4>
+                                <span class="text-[11px] text-gray-400 block mt-0.5">Офіційний посібник інженера</span>
+                            </div>
+                        </div>
+                        <a href="#" class="px-4 py-1 border border-[#0080c6] text-[#0080c6] hover:bg-[#0080c6] hover:text-white text-xs rounded-[2px] transition font-medium">Завантажити</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- ДИСТРИБУТИВЫ -->
+            <div class="space-y-12">
+
+                <!-- ДЕМО-БЛОК: LIRA-FEM 2026 -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start border-b border-gray-100 pb-10">
+                    <div class="md:col-span-4">
+                        <h2 class="text-2xl font-light text-[#0080c6] border-b border-[#0080c6] pb-1 w-full block">LIRA-FEM 2026</h2>
+                        <a href="#" class="text-xs text-[#0080c6] hover:underline mt-1 block">Список оновлень LIRA-FEM 2026</a>
+                    </div>
+                    <div class="md:col-span-8 space-y-6">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 mt-0.5 shrink-0"><i class="fa-solid fa-arrow-up-from-bracket text-[10px]"></i></div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-800">LIRA-FEM 2026 R1 Update 1</h4>
+                                    <span class="text-[11px] text-gray-400 block mb-0.5">04.08.2026</span>
+                                    <p class="text-xs text-gray-600 leading-snug">Пакет оновлення поверх релізу R1. <a href="#" class="text-[#0080c6] hover:underline">Примітки до випуску.</a></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-6 shrink-0">
+                                <span class="text-[11px] text-gray-400 hidden sm:block">04.08.2026</span>
+                                <a href="#" class="px-4 py-1 border border-[#0080c6] text-[#0080c6] hover:bg-[#0080c6] hover:text-white text-xs rounded-[2px] transition font-medium">Завантажити</a>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start justify-between gap-4 pt-4 border-t border-gray-50">
+                            <div class="flex items-start gap-3">
+                                <div class="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 mt-0.5 shrink-0"><i class="fa-solid fa-arrow-up-from-bracket text-[10px]"></i></div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-800">LIRA-FEM 2026 R1</h4>
+                                    <span class="text-[11px] text-gray-400 block mb-0.5">25.05.2026</span>
+                                    <p class="text-xs text-gray-600 leading-snug">Повний реліз. <a href="#" class="text-[#0080c6] hover:underline">Примітки до випуску.</a></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-6 shrink-0">
+                                <span class="text-[11px] text-gray-400 hidden sm:block">25.05.2026</span>
+                                {% if has_license %}
+                                    <a href="#" class="px-4 py-1 bg-[#28a745] hover:bg-green-700 text-white text-xs rounded-[2px] transition font-medium">Завантажити</a>
+                                {% else %}
+                                    <div class="flex items-center gap-1.5 cursor-pointer text-amber-600" title="Доступно лише за комерційною ліцензією">
+                                        <i class="fa-solid fa-user-gear text-lg text-[#d9822b]"></i>
+                                        <span class="text-[10px] text-gray-400 hidden sm:inline">За ліцензією</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ЖИВЫЕ ДИСТРИБУТИВЫ ИЗ АДМИНКИ С ДИНАМИЧЕСКИМИ ПРАВАМИ -->
+                {% if db_distributives.count %}
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start pt-6 border-t-2 border-gray-200">
+                        <div class="md:col-span-4">
+                            <h2 class="text-2xl font-light text-[#28a745] border-b border-[#28a745] pb-1 w-full block">
+                                Власні завантаження
+                            </h2>
+                            <span class="text-[11px] text-gray-400 block mt-1">Керується з адмінки Winter CMS</span>
+                        </div>
+
+                        <div class="md:col-span-8 space-y-4">
+                            {% for item in db_distributives %}
+                                <div class="flex items-start justify-between gap-4 p-3.5 bg-gray-50 rounded border border-gray-200">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-blue-100 text-[#0080c6] flex items-center justify-center shrink-0 mt-0.5">
+                                            <i class="fa-solid fa-download text-xs"></i>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="text-sm font-bold text-gray-800">{{ item.name }} (v{{ item.version }})</h4>
+                                                {% if item.access_level == 'public' %}
+                                                    <span class="px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[9px]">Публічний</span>
+                                                {% elseif item.access_level == 'registered' %}
+                                                    <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[9px]">Для зареєстрованих</span>
+                                                {% elseif item.access_level == 'licensed' %}
+                                                    <span class="px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded text-[9px]">За ліцензією</span>
+                                                {% endif %}
+                                            </div>
+                                            <span class="text-[10px] text-gray-400 block mt-0.5">{{ item.created_at|date('d.m.Y') }}</span>
+                                            <p class="text-xs text-gray-600 mt-1">{{ item.description|default('Офіційний дистрибутив компанії.') }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- ДИНАМИЧЕСКИЕ КНОПКИ СКАЧИВАНИЯ ПО УРОВНЯМ -->
+                                    <div class="shrink-0 flex items-center">
+                                        {% if item.access_level == 'public' %}
+                                            <!-- Доступно всем -->
+                                            <a href="/download/{{ item.id }}" class="px-4 py-1.5 bg-[#0080c6] hover:bg-[#0070ad] text-white text-xs font-medium rounded-[2px] transition shadow-sm">
+                                                Завантажити
+                                            </a>
+
+                                        {% elseif item.access_level == 'registered' %}
+                                            {% if user %}
+                                                <!-- Пользователь авторизован -->
+                                                <a href="/download/{{ item.id }}" class="px-4 py-1.5 bg-[#0080c6] hover:bg-[#0070ad] text-white text-xs font-medium rounded-[2px] transition shadow-sm">
+                                                    Завантажити
+                                                </a>
+                                            {% else %}
+                                                <!-- Гость: просим войти -->
+                                                <a href="/login" class="px-3 py-1.5 border border-gray-300 bg-white hover:bg-gray-100 text-gray-600 text-xs font-medium rounded-[2px] transition flex items-center gap-1.5 shadow-sm" title="Необхідно авторизуватися">
+                                                    <i class="fa-solid fa-lock text-[10px] text-gray-400"></i> Увійти для завантаження
+                                                </a>
+                                            {% endif %}
+
+                                        {% elseif item.access_level == 'licensed' %}
+                                            {% if has_license %}
+                                                <!-- Есть лицензия -->
+                                                <a href="/download/{{ item.id }}" class="px-4 py-1.5 bg-[#28a745] hover:bg-green-700 text-white text-xs font-medium rounded-[2px] transition shadow-sm">
+                                                    Завантажити
+                                                </a>
+                                            {% else %}
+                                                <!-- Нет лицензии -->
+                                                <div class="flex items-center gap-1.5 text-amber-600 p-1" title="Потрібна активна комерційна ліцензія">
+                                                    <i class="fa-solid fa-user-gear text-lg text-[#d9822b]"></i>
+                                                    <span class="text-[10px] text-gray-500 font-medium">За ліцензією</span>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div>
+        {% endif %}
+
+    </div>
+</section>

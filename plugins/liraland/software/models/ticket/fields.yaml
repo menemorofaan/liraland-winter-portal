@@ -1,0 +1,77 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    ticket_number:
+        label: 'Номер тікета (генерується автоматично)'
+        type: text
+        disabled: true
+        span: left
+
+    product:
+        label: 'Програмний продукт'
+        type: dropdown
+        options:
+            'ЛИРА-САПР 2024': 'ЛИРА-САПР 2024'
+            'САПФИР 2024': 'САПФИР 2024'
+            'МОНОМАХ-САПР': 'МОНОМАХ-САПР'
+            'Ліцензування / Ключі': 'Ліцензування / Ключі'
+        span: right
+
+    subject:
+        label: 'Тема звернення'
+        type: text
+        span: full
+
+    client_name:
+        label: "Ім'я клієнта"
+        type: text
+        span: left
+
+    client_email:
+        label: 'Email клієнта'
+        type: text
+        span: right
+
+    priority:
+        label: 'Пріоритет'
+        type: dropdown
+        default: normal
+        options:
+            low: '🟢 Низький'
+            normal: '🔵 Звичайний'
+            high: '🟠 Високий'
+            critical: '🔴 Критичний (зупинка виробництва)'
+        span: left
+
+    status:
+        label: 'Статус заявки'
+        type: dropdown
+        default: new
+        options:
+            new: 'Новий'
+            in_progress: 'В роботі'
+            waiting: 'Очікує відповіді клієнта'
+            resolved: 'Вирішено'
+            closed: 'Закрито'
+        span: right
+
+    assigned_to:
+        label: 'Призначений інженер підтримки'
+        type: relation
+        nameFrom: login
+        emptyOption: '-- Не призначено --'
+        span: left
+
+    message:
+        label: 'Опис проблеми від клієнта'
+        type: textarea
+        size: medium
+        span: full
+
+    internal_notes:
+        label: 'Внутрішні службові нотатки (бачать тільки співробітники)'
+        type: textarea
+        size: small
+        span: full

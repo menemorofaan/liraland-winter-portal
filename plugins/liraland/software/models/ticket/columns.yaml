@@ -1,0 +1,43 @@
+# ===================================
+#  List Column Definitions
+# ===================================
+
+columns:
+    ticket_number:
+        label: 'Номер'
+        searchable: true
+        sortable: true
+
+    subject:
+        label: 'Тема'
+        searchable: true
+
+    client_name:
+        label: 'Клієнт'
+        searchable: true
+
+    product:
+        label: 'Продукт'
+        searchable: true
+
+    priority:
+        label: 'Пріоритет'
+        type: text
+        sortable: true
+
+    status:
+        label: 'Статус'
+        type: text
+        sortable: true
+
+    assigned_to:
+        label: 'Відповідальний'
+        relation: assigned_to
+        select: login
+        searchable: true
+
+    created_at:
+        label: 'Створено'
+        type: datetime
+        format: 'd.m.Y H:i'
+        sortable: true

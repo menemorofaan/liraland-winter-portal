@@ -1,0 +1,26 @@
+# ===================================
+#  List Column Definitions
+# ===================================
+
+columns:
+    name:
+        label: 'Назва'
+        searchable: true
+        sortable: true
+
+    version:
+        label: 'Версія'
+        searchable: true
+        sortable: true
+
+    access_level:
+        label: 'Рівень доступу'
+        type: text
+
+    is_published:
+        label: 'Статус'
+        type: switch
+
+    created_at:
+        label: 'Створено'
+        type: datetime

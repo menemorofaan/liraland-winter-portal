@@ -1,0 +1,366 @@
+title = "Тема форуму"
+url = "/forum/topic/:slug"
+layout = "default"
+
+[session]
+==
+<?php
+use Winter\User\Facades\Auth;
+use Liraland\Forum\Models\Topic;
+use Liraland\Forum\Models\Post;
+
+function onStart()
+{
+    $this['user'] = Auth::getUser();
+
+    // Шлюз скачивания с оригинальным именем
+    if (\Input::has('download_file')) {
+        $fileId = (int)\Input::get('download_file');
+        $file = \System\Models\File::find($fileId);
+        if ($file && file_exists($file->getLocalPath())) {
+            return \Response::download($file->getLocalPath(), $file->file_name);
+        }
+    }
+
+    $this['topic'] = Topic::where('slug', $this->param('slug'))
+        ->with(['posts.attachments', 'posts.user.avatar', 'channel'])
+        ->firstOrFail();
+
+    if (\Request::isMethod('get')) {
+        $this['topic']->increment('count_views');
+    }
+
+    $user = $this['user'];
+
+    // Удаление поста
+    if (\Request::isMethod('post') && \Input::has('delete_post_id')) {
+        if (!$user) return \Redirect::to('/login');
+
+        $postId = (int)\Input::get('delete_post_id');
+        $post = Post::where('id', $postId)->first();
+
+        if ($post && ($user->id == $post->user_id || $user->is_superuser)) {
+            if ($this['topic']->posts()->count() <= 1) {
+                $channel = $this['topic']->channel;
+                $this['topic']->delete();
+                if ($channel) {
+                    $channel->decrement('count_topics');
+                    $channel->decrement('count_posts');
+                    $channel->save();
+                }
+                \Flash::success('Тему повністю видалено.');
+                return \Redirect::to('/forum/channel/' . ($channel ? $channel->slug : ''));
+            }
+
+            $post->delete();
+            $this['topic']->decrement('count_posts');
+            if ($this['topic']->channel) {
+                $this['topic']->channel->decrement('count_posts');
+                $this['topic']->channel->save();
+            }
+            \Flash::success('Повідомлення видалено.');
+            return \Redirect::to('/forum/topic/' . $this['topic']->slug);
+        }
+    }
+
+    // Редактирование поста
+    if (\Request::isMethod('post') && \Input::has('edit_post_id')) {
+        if (!$user) return \Redirect::to('/login');
+
+        $postId = (int)\Input::get('edit_post_id');
+        $newContent = trim(\Input::get('edit_content'));
+        $post = Post::where('id', $postId)->first();
+
+        if ($post && ($user->id == $post->user_id || $user->is_superuser) && !empty($newContent)) {
+            $post->content = $newContent;
+            $post->save();
+            \Flash::success('Повідомлення оновлено.');
+            return \Redirect::to('/forum/topic/' . $this['topic']->slug);
+        }
+    }
+
+    // Публикация нового ответа
+    if (\Request::isMethod('post') && \Input::has('reply_post')) {
+        if (!$user) {
+            \Flash::error('Будь ласка, увійдіть для публікації відповіді');
+            return \Redirect::to('/login');
+        }
+
+        // Проверка лимита размера файла PHP перед сохранением
+        if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $err = $_FILES['attachment']['error'];
+            if ($err === UPLOAD_ERR_INI_SIZE || $err === UPLOAD_ERR_FORM_SIZE) {
+                $this['error'] = 'Файл перевищує максимальний ліміт сервера (' . ini_get('upload_max_filesize') . '). Зменшіть розмір файлу або зверніться до адміністратора.';
+                return;
+            } elseif ($err !== UPLOAD_ERR_OK) {
+                $this['error'] = 'Помилка при завантаженні файлу (код: ' . $err . ').';
+                return;
+            }
+        }
+
+        $content = trim(\Input::get('content'));
+        if (empty($content)) {
+            $this['error'] = 'Будь ласка, введіть текст відповіді.';
+            return;
+        }
+
+        $authorName = $user->name ?: ($user->username ?: $user->email);
+
+        $post = Post::create([
+            'topic_id'    => $this['topic']->id,
+            'user_id'     => $user->id,
+            'author_name' => $authorName,
+            'content'     => $content
+        ]);
+
+        if (\Input::hasFile('attachment')) {
+            $file = new \System\Models\File();
+            $file->data = \Input::file('attachment');
+            $file->is_public = true;
+            $file->save();
+            $post->attachments()->add($file);
+        }
+
+        $this['topic']->increment('count_posts');
+        $this['topic']->touch();
+
+        if ($this['topic']->channel) {
+            $this['topic']->channel->increment('count_posts');
+            $this['topic']->channel->last_post_title = $this['topic']->title;
+            $this['topic']->channel->last_post_user = $authorName;
+            $this['topic']->channel->last_post_at = date('d.m.Y H:i:s');
+            $this['topic']->channel->save();
+        }
+
+        \Flash::success('Відповідь успішно опубліковано!');
+        return \Redirect::to('/forum/topic/' . $this['topic']->slug);
+    }
+}
+?>
+==
+<script>
+function insertBBCode(textareaId, openTag, closeTag, defaultText) {
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end) || defaultText;
+    const replacement = openTag + selectedText + closeTag;
+    textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+    textarea.focus();
+    textarea.selectionStart = start + openTag.length;
+    textarea.selectionEnd = start + openTag.length + selectedText.length;
+}
+</script>
+
+<div class="bg-gray-100 py-3 border-b border-gray-200 text-left w-full">
+    <div class="max-w-7xl mx-auto px-4 text-xs text-gray-500 flex items-center space-x-2">
+        <a href="/forum" class="text-[#0080c6] hover:underline">Форуми</a>
+        <span>/</span>
+        <a href="/forum/channel/{{ topic.channel.slug }}" class="text-[#0080c6] hover:underline">{{ topic.channel.title }}</a>
+        <span>/</span>
+        <span class="text-gray-700 font-semibold truncate">{{ topic.title }}</span>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 py-6 text-left w-full">
+    <div class="mb-6 flex justify-between items-center border-b border-gray-200 pb-3">
+        <div class="text-left">
+            <h1 class="text-2xl font-bold text-gray-800 text-left">{{ topic.title }}</h1>
+            <span class="text-xs text-gray-500">Розділ: <a href="/forum/channel/{{ topic.channel.slug }}" class="text-[#0080c6] hover:underline">{{ topic.channel.title }}</a> · Переглядів: {{ topic.count_views }}</span>
+        </div>
+        <a href="/forum/channel/{{ topic.channel.slug }}" class="text-xs text-[#0080c6] hover:underline font-medium">
+            ← До розділу
+        </a>
+    </div>
+
+    <!-- СПИСОК СООБЩЕНИЙ -->
+    <div class="space-y-4 mb-8 text-left w-full">
+        {% for post in topic.posts %}
+        <div class="border border-[#cbd5e1] rounded-sm bg-white shadow-xs overflow-hidden text-left w-full" id="post-{{ post.id }}">
+            <div class="bg-[#edf2f7] px-4 py-2.5 border-b border-[#cbd5e1] flex justify-between items-center text-xs text-gray-600">
+                <div class="flex items-center space-x-2.5">
+                    {% if post.user and post.user.avatar %}
+                        <img src="{{ post.user.avatar.path }}" alt="{{ post.author_name }}" class="w-7 h-7 rounded-full object-cover border border-gray-300 shadow-2xs">
+                    {% else %}
+                        <span class="w-7 h-7 rounded-full bg-[#0080c6] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
+                            {{ post.author_name|slice(0, 1)|upper }}
+                        </span>
+                    {% endif %}
+
+                    <strong class="text-[#0080c6] font-bold">{{ post.author_name }}</strong>
+
+                    {% if loop.first %}
+                        <span class="bg-blue-100 text-[#0080c6] text-[10px] px-1.5 py-0.5 rounded font-semibold">Автор теми</span>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center space-x-3 text-gray-500">
+                    <span>{{ post.created_at|date('d.m.Y H:i:s') }}</span>
+
+                    {% if user and (user.id == post.user_id or user.is_superuser) %}
+                        <span class="text-gray-300">|</span>
+                        <button type="button" onclick="document.getElementById('edit-box-{{ post.id }}').classList.toggle('hidden')" class="text-blue-600 hover:underline cursor-pointer font-medium">
+                            ✎ Редагувати
+                        </button>
+                        <form method="POST" class="inline" onsubmit="return confirm('Ви впевнені, що хочете видалити це повідомлення?');">
+                            <input type="hidden" name="delete_post_id" value="{{ post.id }}">
+                            <button type="submit" class="text-red-500 hover:underline cursor-pointer font-medium ml-1">
+                                🗑 Видалити
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Тело поста: использует post.formatted_content из модели -->
+            <div class="p-5 text-sm text-gray-800 leading-relaxed text-left">
+                <div class="text-left text-gray-800 prose prose-sm max-w-none">
+                    {{ post.formatted_content|raw }}
+                </div>
+
+                <!-- Редактирование -->
+                {% if user and (user.id == post.user_id or user.is_superuser) %}
+                <div id="edit-box-{{ post.id }}" class="hidden mt-4 p-4 bg-gray-50 border border-blue-200 rounded-sm">
+                    <form method="POST">
+                        <input type="hidden" name="edit_post_id" value="{{ post.id }}">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Редагування повідомлення (підтримує BB-коди):</label>
+                        <textarea name="edit_content" rows="4" required class="w-full border border-gray-300 rounded p-2 text-xs bg-white focus:outline-none focus:border-[#0080c6] font-sans">{{ post.content }}</textarea>
+                        <div class="mt-2 flex space-x-2">
+                            <button type="submit" class="bg-[#0080c6] hover:bg-[#006ca8] text-white px-3 py-1.5 rounded text-xs font-bold transition">
+                                Зберегти зміни
+                            </button>
+                            <button type="button" onclick="document.getElementById('edit-box-{{ post.id }}').classList.add('hidden')" class="text-xs text-gray-500 hover:underline px-2 py-1.5">
+                                Скасувати
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+
+                <!-- ВЛОЖЕНИЯ -->
+                {% if post.attachments.count > 0 %}
+                    <div class="mt-5 pt-3 border-t border-gray-100 text-left">
+                        <span class="text-xs text-gray-500 font-semibold mb-2 block">Прикріплені файли:</span>
+                        <div class="space-y-3">
+                            {% for file in post.attachments %}
+                                {% set ext = file.file_name|split('.')|last|lower %}
+
+                                {% if ext in ['gif', 'png', 'jpg', 'jpeg', 'webp', 'svg'] or (file.content_type and file.content_type starts with 'image/') %}
+                                    <div class="mt-2 text-left">
+                                        <a href="{{ file.path }}" target="_blank" title="Відкрити оригінал у новій вкладці">
+                                            <img src="{{ file.path }}" alt="{{ file.file_name }}" class="max-w-xl max-h-[500px] rounded border border-gray-300 shadow-sm hover:opacity-95 transition bg-white block" loading="lazy">
+                                        </a>
+                                        <div class="flex items-center space-x-3 mt-1.5 text-[11px] text-gray-500">
+                                            <span class="font-medium text-gray-700">{{ file.file_name }}</span>
+                                            <span>({{ (file.file_size / 1024)|round(1) }} КБ)</span>
+                                            <a href="?download_file={{ file.id }}" class="text-[#0080c6] hover:underline font-semibold">⬇ Завантажити оригінал</a>
+                                        </div>
+                                    </div>
+                                {% elseif ext in ['mp4', 'webm', 'mov'] or (file.content_type and file.content_type starts with 'video/') %}
+                                    <div class="mt-2 text-left">
+                                        <video src="{{ file.path }}" autoplay loop muted playsinline controls class="max-w-xl max-h-[500px] rounded border border-gray-300 shadow-sm bg-black block"></video>
+                                        <div class="flex items-center space-x-3 mt-1.5 text-[11px] text-gray-500">
+                                            <span class="font-medium text-gray-700">{{ file.file_name }}</span>
+                                            <span>({{ (file.file_size / 1024)|round(1) }} КБ · Анімація)</span>
+                                            <a href="?download_file={{ file.id }}" class="text-[#0080c6] hover:underline font-semibold">⬇ Завантажити</a>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="p-2.5 bg-blue-50 border border-blue-200 rounded-sm inline-flex items-center space-x-3 text-xs">
+                                        <div class="px-2 py-1 bg-[#0080c6] text-white font-mono font-bold text-[10px] rounded uppercase">
+                                            .{{ ext }}
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="font-bold text-gray-800">{{ file.file_name }}</div>
+                                            <div class="text-gray-500 text-[11px]">{{ (file.file_size / 1024)|round(1) }} КБ</div>
+                                        </div>
+                                        <a href="?download_file={{ file.id }}" class="ml-3 bg-[#0080c6] hover:bg-[#006ca8] text-white px-3 py-1 rounded text-xs font-semibold shadow-2xs transition">
+                                            Завантажити
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% elseif loop.first and topic.slug == 'plastinni-analohy-dopomozhit-rozrakhunkom' %}
+                    <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-sm inline-flex items-center space-x-3 text-xs text-left">
+                        <div class="px-2 py-1 bg-[#0080c6] text-white font-mono font-bold rounded uppercase">.LIR</div>
+                        <div class="text-left">
+                            <div class="font-bold text-gray-800">Model_Kolonna_Punching_v2024.lir</div>
+                            <div class="text-gray-500 text-[11px]">Розмір: 4.8 МБ · Розрахункова схема ЛІРА-САПР</div>
+                        </div>
+                        <span class="ml-3 text-gray-400 text-[11px] italic">(Демонстраційне вкладення)</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- БЛОК ОТВЕТА С ТУЛБАРОМ -->
+    <div class="border border-[#cbd5e1] rounded-sm bg-white shadow-xs overflow-hidden text-left w-full">
+        <div class="bg-[#1f4b75] text-white px-4 py-2 text-xs font-bold text-left">
+            Швидка відповідь у тему
+        </div>
+
+        <div class="p-5 text-left">
+            {% if user %}
+                {% if error %}
+                    <div class="bg-red-100 border border-red-300 text-red-700 text-xs p-3 rounded mb-3">{{ error }}</div>
+                {% endif %}
+
+                <form method="POST" enctype="multipart/form-data" class="space-y-4 text-left">
+                    <input type="hidden" name="reply_post" value="1">
+
+                    <div class="text-xs text-gray-600 flex items-center space-x-2">
+                        <span>Ви відповідаєте як:</span>
+                        {% if user.avatar %}
+                            <img src="{{ user.avatar.path }}" class="w-5 h-5 rounded-full object-cover">
+                        {% endif %}
+                        <strong class="text-[#0080c6] font-bold">{{ user.name ?: user.username ?: user.email }}</strong>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">Текст відповіді:</label>
+
+                        <!-- ТУЛБАР ФОРМАТИРОВАНИЯ -->
+                        <div class="flex flex-wrap gap-1 bg-gray-100 border border-b-0 border-gray-300 p-1.5 rounded-t text-xs">
+                            <button type="button" onclick="insertBBCode('reply-textarea', '[b]', '[/b]', 'жирний текст')" class="px-2.5 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded font-bold text-gray-800 cursor-pointer" title="Жирний">B</button>
+                            <button type="button" onclick="insertBBCode('reply-textarea', '[i]', '[/i]', 'курсив')" class="px-2.5 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded italic font-serif text-gray-800 cursor-pointer" title="Курсив">I</button>
+                            <button type="button" onclick="insertBBCode('reply-textarea', '[u]', '[/u]', 'підкреслений')" class="px-2.5 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded underline text-gray-800 cursor-pointer" title="Підкреслений">U</button>
+                            <button type="button" onclick="insertBBCode('reply-textarea', '[s]', '[/s]', 'закреслений')" class="px-2.5 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded line-through text-gray-800 cursor-pointer" title="Закреслений">S</button>
+                            <span class="border-r border-gray-300 my-0.5 mx-1"></span>
+                            <button type="button" onclick="insertBBCode('reply-textarea', '[quote]', '[/quote]', 'текст цитати')" class="px-2.5 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded text-gray-700 cursor-pointer" title="Цитата">💬 Цитата</button>
+                            <button type="button" onclick="insertBBCode('reply-textarea', '[code]', '[/code]', '// код формули або лог')" class="px-2.5 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded font-mono text-gray-700 cursor-pointer" title="Код">💻 Код</button>
+                            <button type="button" onclick="insertBBCode('reply-textarea', '[spoiler=Деталі розрахунку]', '[/spoiler]', 'прихований текст')" class="px-2.5 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded text-gray-700 cursor-pointer" title="Спойлер">🙈 Спойлер</button>
+                            <span class="border-r border-gray-300 my-0.5 mx-1"></span>
+                            <button type="button" onclick="insertBBCode('reply-textarea', '[url=https://liraland.ua]', '[/url]', 'Назва посилання')" class="px-2.5 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded text-gray-700 cursor-pointer" title="Посилання">🔗 Посилання</button>
+                            <button type="button" onclick="insertBBCode('reply-textarea', '[img]', '[/img]', 'https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif')" class="px-2.5 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded text-gray-700 cursor-pointer" title="GIF або фото">🖼 GIF/Фото</button>
+                        </div>
+
+                        <textarea id="reply-textarea" name="content" rows="5" required placeholder="Напишіть коментар. Підтримуються BB-коди, спойлери, код та посилання на GIF..." class="w-full border border-gray-300 rounded-b p-3 text-xs text-gray-800 focus:outline-none focus:border-[#0080c6] font-sans"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Додати файл або анімацію (.lir, .xlsx, .zip, .gif, .mp4) до 64 МБ:</label>
+                        <input type="file" name="attachment" class="text-xs text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-[#0080c6] hover:file:bg-blue-100 cursor-pointer">
+                    </div>
+
+                    <div>
+                        <button type="submit" class="bg-[#0080c6] hover:bg-[#006ca8] text-white px-5 py-2 rounded text-xs font-bold transition shadow-xs cursor-pointer">
+                            Опублікувати відповідь
+                        </button>
+                    </div>
+                </form>
+            {% else %}
+                <div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 text-xs rounded text-center">
+                    Щоб взяти участь в обговоренні, будь ласка, 
+                    <a href="/login" class="font-bold text-[#0080c6] underline">увійдіть під своїм акаунтом</a> 
+                    або 
+                    <a href="/register" class="font-bold text-[#0080c6] underline">зареєструйтесь</a>.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

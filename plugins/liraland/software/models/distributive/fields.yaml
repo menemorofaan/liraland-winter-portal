@@ -1,0 +1,46 @@
+fields:
+    name:
+        label: 'Назва дистрибутиву'
+        type: text
+        span: left
+        required: true
+        placeholder: 'Наприклад: ЛІРА-САПР 2026 PRO'
+
+    version:
+        label: 'Версія / Реліз'
+        type: text
+        span: right
+        placeholder: '2026.1 Build 1204'
+
+    file_path:
+        label: 'Тяжкий дистрибутив із сервера (SFTP / ISO)'
+        type: dropdown
+        emptyOption: '-- Оберіть готовий файл зі сховища сервера --'
+        span: left
+        comment: 'Файли автоматично зчитуються з папки storage/app/protected_distributives/'
+
+    access_level:
+        label: 'Рівень доступу для завантаження'
+        type: dropdown
+        span: right
+        options:
+            public: 'Загальнодоступний (для всіх)'
+            registered: 'Тільки для зареєстрованих'
+            licensed: 'Комерційний (тільки з активною ліцензією)'
+
+    is_published:
+        label: 'Опубліковано на сайті'
+        type: switch
+        span: left
+        default: true
+
+    file:
+        label: 'Або завантажити невеликий патч через браузер (до 64 МБ)'
+        type: fileupload
+        mode: file
+        span: right
+
+    description:
+        label: 'Опис та примітки до випуску'
+        type: textarea
+        size: small

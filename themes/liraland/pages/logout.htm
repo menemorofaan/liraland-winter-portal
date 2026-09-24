@@ -1,0 +1,8 @@
+title = "Вихід"
+url = "/logout"
+==
+function onStart() {
+    \Winter\User\Facades\Auth::logout();
+    return \Redirect::to('/login');
+}
+==

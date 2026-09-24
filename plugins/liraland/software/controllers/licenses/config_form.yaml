@@ -1,0 +1,31 @@
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+# Record name
+name: 'liraland.software::lang.models.license.label'
+
+# Model Form Field configuration
+form: $/liraland/software/models/license/fields.yaml
+
+# Model Class name
+modelClass: Liraland\Software\Models\License
+
+# Default redirect location
+defaultRedirect: liraland/software/licenses
+
+# Create page
+create:
+    title: backend::lang.form.create_title
+    redirect: liraland/software/licenses/update/:id
+    redirectClose: liraland/software/licenses
+
+# Update page
+update:
+    title: backend::lang.form.update_title
+    redirect: liraland/software/licenses
+    redirectClose: liraland/software/licenses
+
+# Preview page
+preview:
+    title: backend::lang.form.preview_title
