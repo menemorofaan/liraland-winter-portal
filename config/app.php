@@ -129,15 +129,15 @@ return [
     |
     |  - To trust all proxies (i.e. AWS ELB behind CloudFront):
     |
-    |      'trustedProxies' => '**',
+    |      'trustedProxies' => '*',
     |
     |  - To trust two IP addresses as proxies
     |
-    |      'trustedProxies' => '192.168.1.1, 192.168.1.2',
-    |      'trustedProxies' => ['192.168.1.1', '192.168.1.2'],
+    |      'trustedProxies' => '*', 192.168.1.2',
+    |      'trustedProxies' => '*', '192.168.1.2'],
     */
 
-    'trustedProxies' => null,
+    'trustedProxies' => '*',
 
     /*
     |--------------------------------------------------------------------------
